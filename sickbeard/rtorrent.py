@@ -55,14 +55,24 @@ def sendTorrent(torrent):
         if (data == None):
             return False
 
+    # set rtorrent download location  from sickbeard
+    torrent_save_path = torrent.episodes[0].show.location
+
     torrentcontent64 = xmlrpclib.Binary(data)
+
+    xmlrpc_params=(torrentcontent64,
+        #"d.priority.set=" + str(priority),
+        "view.set_visible=rat_1",
+        "d.custom1.set=" + str(sickbeard.RTORRENT_CATEGORY), 
+        "d.set_directory=" + "\"" + torrent_save_path + "\"")
 
     logger.log(u"Sending torrent to rTorrent")
     logger.log(u"URL: " + sickbeard.RTORRENT_URL, logger.DEBUG)
+    logger.log(u"Sent to rTorrent: torrentdatafiltered," +
+    ','.join(xmlrpc_params[1:]))
 
     try:
-        if (rtorrent_xmlrpc.load_raw_start(torrentcontent64, "d.priority.set=" + str(priority), \
-            "d.custom1.set=" + str(sickbeard.RTORRENT_CATEGORY)) == 0):
+        if (rtorrent_xmlrpc.load_raw_start(xmlrpc_params) == 0):
             logger.log(u"torrent sent to rTorrent successfully", logger.DEBUG)
             return True
         else:
